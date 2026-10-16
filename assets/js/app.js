@@ -35,7 +35,7 @@ function home(){
  ['Hill Country','Scenic Beauty','tea-ref.webp','Ella'],
  ['Waterfalls','Hidden Gems','falls-ref.webp','Nuwara Eliya']
  ];
- return `<section class="ref-hero"><div class="ref-container ref-hero-inner"><button class="ref-slide-prev" id="ref-slide-prev" aria-label="Previous hero image">←</button><div class="ref-hero-main"><div class="ref-hero-copy"><span class="ref-script">Explore</span><h1>SRI LANKA</h1><div class="ref-hairline">A JOURNEY BEYOND ORDINARY</div><p>Discover breathtaking landscapes, rich culture, thrilling safaris and unforgettable experiences with RandA Travel &amp; Holidays.</p><div class="ref-hero-actions"><a href="tours.html" class="ref-hero-link">Discover Our Tours ↗</a><a href="contact.html" class="ref-hero-link">Plan a Custom Trip ↗</a></div></div><div class="ref-hero-badge">✦ &nbsp; Your Sri Lanka story begins here</div></div><button class="ref-slide-next" id="ref-slide-next" aria-label="Next hero image">→</button></div><div class="ref-container">${searchPanel()}</div></section>
+ return `<section class="ref-hero"><div class="ref-container ref-hero-inner"><div class="randa-hero-slides" aria-hidden="true"><div class="randa-slide randa-slide-active" style="background-image:url('assets/images/hero-reference.webp')"></div><div class="randa-slide"></div></div><div class="ref-hero-main"><div class="ref-hero-copy"><span class="ref-script">Explore</span><h1>SRI LANKA</h1><div class="ref-hairline">A JOURNEY BEYOND ORDINARY</div><p>Discover breathtaking landscapes, rich culture, thrilling safaris and unforgettable experiences with RandA Travel &amp; Holidays.</p><div class="ref-hero-actions"><a href="tours.html" class="ref-hero-link">Discover Our Tours ↗</a><a href="contact.html" class="ref-hero-link">Plan a Custom Trip ↗</a></div></div><div class="ref-hero-badge">✦ &nbsp; Your Sri Lanka story begins here</div></div></div><div class="ref-container">${searchPanel()}</div></section>
  <section class="ref-trustbar"><div class="ref-container ref-trust-list"><div class="ref-trust"><span>✧</span><div><strong>Tailor-Made</strong><small>Private Travel Experiences</small></div></div><div class="ref-trust"><span>♧</span><div><strong>Guest-Focused</strong><small>Personal Travel Planning</small></div></div><div class="ref-trust"><span>▣</span><div><strong>Islandwide</strong><small>Transport &amp; Activities</small></div></div><div class="ref-trust"><span>✥</span><div><strong>Discover More</strong><small>Culture · Wildlife · Coast</small></div></div></div></section>
  <section class="ref-dest-section" id="destinations"><div class="ref-container"><div class="ref-section-title"><div><span class="ref-kicker">TOP DESTINATIONS</span><h2>Explore the Beauty of Sri Lanka</h2><p>From golden beaches to ancient cities, wildlife safaris to misty mountains —<br class="ref-desktop"> discover a destination for every traveler.</p></div><a href="destinations.html" class="ref-outline">View All Destinations &nbsp; →</a></div><div class="ref-dest-grid">${dests.map(([name,tag,image,region],i)=>`<a class="ref-dest-card reveal" style="--reveal-delay:${i*65}ms" href="tours.html?destination=${encodeURIComponent(region)}"><img src="${img(image)}" alt="Illustrative ${escapeHTML(name)} scene" loading="lazy"><span class="ref-dest-info"><strong>${escapeHTML(name)}</strong><small>${escapeHTML(tag)}</small></span><span class="ref-dest-arrow" aria-hidden="true">→</span></a>`).join('')}</div></div></section>
  ${reviewsSection()}
@@ -176,8 +176,38 @@ function fillMain(){const components={home,tours,destinations,safaris,transport,
 function setDateMins(){$$('input[type="date"]').forEach(el=>{const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());el.min=now.toISOString().slice(0,10);});}
 function fieldsFromForm(form){let entries=new FormData(form),obj={};for(let [key,val] of entries){if(String(val).trim())obj[key]=val;}return obj;}
 function linkForms(){
- const hero=$('#hero-search');if(hero){let current='tours';$$('.ref-tab').forEach(b=>b.addEventListener('click',()=>{current=b.dataset.mode;$$('.ref-tab').forEach(el=>{el.classList.toggle('active',el===b);el.setAttribute('aria-pressed',String(el===b))});$('#ref-search-label').textContent=current==='safaris'?'Explore Safaris':current==='transport'?'Transport Enquiry':current==='custom'?'Plan Custom Trip':'Search Tours';}));hero.addEventListener('submit',e=>{e.preventDefault();let f=fieldsFromForm(hero);if(current==='custom'||current==='transport'){const url=current==='custom'?'contact.html':'transport.html';location.href=url;return;}if(current==='safaris'){location.href='safaris.html';return;}let q=new URLSearchParams();if(f.tour)q.set('tour',f.tour);if(f.date)q.set('date',f.date);if(f.guests)q.set('guests',f.guests);location.href='tours.html'+(q.toString()?'?'+q.toString():'');});}
- const refHero=$('.ref-hero');if(refHero){let h=0;const slides=['hero-reference.webp','beach.webp','safari.webp'];const apply=()=>{refHero.style.backgroundImage=`url('${img(slides[h])}')`;};const change=(d)=>{h=(h+d+slides.length)%slides.length;apply();};apply();$('#ref-slide-prev')?.addEventListener('click',()=>change(-1));$('#ref-slide-next')?.addEventListener('click',()=>change(1));if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){setInterval(()=>change(1),5600);}}
+ const hero=$('#hero-search');if(hero){
+  let current='tours';
+  const select=$('#where'),fieldLabel=$('label[for="where"]');
+  const pickerConfigs={
+    tours:{label:'Tour Package',placeholder:'Select package',items:data.tours.map(t=>[t.title,`${t.title} — ${t.duration}`]),button:'Search Tours'},
+    safaris:{label:'Safari Experience',placeholder:'Select safari',items:data.safaris.map(t=>[t.name,t.name]),button:'Explore Safaris'},
+    transport:{label:'Transport Type',placeholder:'Select vehicle',items:data.vehicles.map(t=>[t.name,t.name]),button:'Transport Enquiry'},
+    custom:{label:'Preferred Destination',placeholder:'Select a destination',items:data.destinations.map(t=>[t.name,t.name]),button:'Plan Custom Trip'}
+  };
+  const renderPicker=mode=>{
+    const c=pickerConfigs[mode];fieldLabel.textContent=`⌖   ${c.label}`;
+    select.name=mode==='tours'?'tour':'interest';
+    select.innerHTML=`<option value="">${escapeHTML(c.placeholder)}</option>`+c.items.map(([value,label])=>`<option value="${escapeHTML(value)}">${escapeHTML(label)}</option>`).join('');
+    $('#ref-search-label').textContent=c.button;
+  };
+  $$('.ref-tab').forEach(b=>b.addEventListener('click',()=>{
+    current=b.dataset.mode;
+    $$('.ref-tab').forEach(el=>{el.classList.toggle('active',el===b);el.setAttribute('aria-pressed',String(el===b))});
+    renderPicker(current);
+  }));
+  hero.addEventListener('submit',e=>{
+    e.preventDefault();let f=fieldsFromForm(hero);
+    if(current==='custom'||current==='transport'){
+      location.href=current==='custom'?'contact.html':'transport.html';return;
+    }
+    if(current==='safaris'){location.href='safaris.html';return;}
+    const q=new URLSearchParams();
+    if(f.tour)q.set('tour',f.tour);if(f.date)q.set('date',f.date);if(f.guests)q.set('guests',f.guests);
+    location.href='tours.html'+(q.toString()?'?'+q.toString():'');
+  });
+ }
+ // Background slideshow is handled by hero-refinement.js; no visible navigation arrows.
  const cf=$('#contact-form');if(cf)cf.addEventListener('submit',e=>{e.preventDefault();if(!cf.reportValidity())return;openWA(inquiryMessage('an inbound Sri Lanka holiday',fieldsFromForm(cf)));});
  const df=$('#detail-form');if(df)df.addEventListener('submit',e=>{e.preventDefault();if(!df.reportValidity())return;openWA(inquiryMessage(df.dataset.tour,fieldsFromForm(df)));});
  const tf=$('#transport-form');if(tf)tf.addEventListener('submit',e=>{e.preventDefault();if(!tf.reportValidity())return;openWA(inquiryMessage('a transport quotation',fieldsFromForm(tf)));});

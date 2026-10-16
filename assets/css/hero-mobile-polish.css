@@ -1,0 +1,85 @@
+/* RandA mobile hero improvements | premium Black & Gold theme preserved */
+/* True cross-fade between separate background layers; no arrow controls in the DOM. */
+.ref-hero{background-color:#111113;background-image:url('../images/hero-reference.webp');}
+@media(min-width:761px){.ref-hero{height:410px!important}}
+.ref-hero .randa-hero-slides{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.ref-hero .randa-slide{position:absolute;inset:-2%;background-position:center 46%;background-size:cover;background-repeat:no-repeat;opacity:0;transform:scale(1.045);transition:opacity 1.65s ease-in-out;will-change:opacity;}
+.ref-hero .randa-slide.randa-slide-active{opacity:1;animation:randaHeroBreath 10s ease-in-out forwards}
+@keyframes randaHeroBreath{from{transform:scale(1.045)}to{transform:scale(1.10)}}
+.ref-hero::before{z-index:1!important;pointer-events:none;animation:none!important;opacity:.6;}
+.ref-hero::after{z-index:1!important;pointer-events:none;}
+.ref-hero .ref-hero-inner{z-index:3}
+.ref-hero>.ref-container:last-child{z-index:5}
+/* Redundant old arrows hidden as an additional fallback for cached markup. */
+.ref-slide-prev,.ref-slide-next{display:none!important}
+/* Visible focus and responsive controls */
+.ref-tab:focus-visible,.ref-search-submit:focus-visible,.ref-hero-link:focus-visible{outline:3px solid #f1bd63;outline-offset:3px}
+.ref-hero-link{transition:color .22s ease,border-color .22s ease,transform .25s ease}
+.ref-hero-link:hover{color:#f3c979;transform:translateY(-2px)}
+.ref-field select,.ref-field input{font-size:max(12px,1em);min-height:30px}
+.ref-search-submit{min-height:42px}
+/* On medium-size tablets, avoid cramped hero layout and menu overlap. */
+@media(min-width:761px) and (max-width:1090px){
+ .ref-hero-copy{width:min(470px,58vw);margin-right:6px}
+ .ref-hero-copy h1{font-size:clamp(54px,7.5vw,84px)}
+ .ref-hero .ref-container:last-child{width:calc(100% - 52px)}
+ .ref-search-tabs .ref-tab{padding:0 15px}
+}
+/* MOBILE: natural-height hero prevents controls, headings, and search card intersecting. */
+@media(max-width:760px){
+ .ref-hero{height:auto!important;min-height:0!important;padding-bottom:22px;overflow:hidden}
+ .ref-hero .ref-container.ref-hero-inner{height:auto!important;min-height:0!important;width:calc(100% - 34px);display:block;position:relative;}
+ .ref-hero .ref-hero-main{display:flex!important;flex-direction:column;align-items:stretch!important;justify-content:flex-start!important;height:auto!important;min-height:0!important;}
+ .ref-hero .ref-hero-copy{width:100%!important;margin:0!important;padding:42px 6px 0!important;max-width:540px}
+ .ref-hero-copy .ref-script{margin-left:18px!important;font-size:clamp(31px,8vw,41px)!important}
+ .ref-hero-copy h1{font-size:clamp(39px,10.5vw,72px)!important;line-height:1.06;letter-spacing:-.035em;white-space:nowrap!important;max-width:100%}
+ .ref-hairline{white-space:normal!important;gap:9px!important;letter-spacing:.18em!important;font-size:clamp(8px,2.15vw,11px)!important;line-height:1.5;margin:5px 0 13px!important}
+ .ref-hairline:before,.ref-hairline:after{width:16px;min-width:13px}
+ .ref-hero-copy p{font-size:clamp(13px,3.45vw,15px)!important;line-height:1.65!important;max-width:480px;margin:0 0 16px!important}
+ .ref-hero-actions{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+ .ref-hero-actions .ref-hero-link{display:inline-flex;align-items:center;font-size:12px;min-height:33px;line-height:1.4}
+ .ref-hero-badge{position:static!important;inset:auto!important;align-self:flex-start;max-width:100%;margin:18px 0 16px 6px;display:inline-flex;align-items:center;padding:10px 14px;font-size:11px;white-space:normal}
+ .ref-hero>.ref-container:last-child{position:relative!important;inset:auto!important;left:auto!important;bottom:auto!important;transform:none!important;width:calc(100% - 28px)!important;margin:0 auto;}
+ .ref-search-dock{padding-top:0!important;position:relative;width:100%}
+ .ref-search-tabs{position:relative!important;inset:auto!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;align-items:stretch!important;height:auto!important;overflow:hidden!important;width:100%!important;border-radius:15px 15px 0 0!important;box-shadow:0 6px 20px rgba(0,0,0,.21)}
+ .ref-tab{height:43px!important;width:100%;min-width:0!important;display:flex;align-items:center;justify-content:center;text-align:center;font-size:10px!important;white-space:normal!important;line-height:1.25;padding:5px 6px!important;letter-spacing:0}
+ .ref-tab:nth-child(odd){border-right:1px solid rgba(235,192,110,.24)}
+ .ref-tab:nth-child(-n+2){border-bottom:1px solid rgba(235,192,110,.24)}
+ .ref-search-panel{border-radius:0 0 15px 15px!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:0!important;padding:10px 11px 12px!important;min-height:0;box-shadow:0 14px 28px rgba(0,0,0,.27)!important;}
+ .ref-field{min-width:0;min-height:64px;padding:10px 9px!important;justify-content:center;gap:5px;border:0!important;border-bottom:1px solid #e7d9bd!important}
+ .ref-field:nth-child(1){border-right:1px solid #e7d9bd!important}
+ .ref-field:nth-child(2){border-right:0!important}
+ .ref-field:nth-child(3){grid-column:1/-1;padding-top:12px!important;padding-bottom:10px!important}
+ .ref-field label{font-size:11px!important;line-height:1.3!important;color:#30271a;}
+ .ref-field select,.ref-field input{font-size:13px!important;height:32px;min-height:32px;padding:3px 4px!important;max-width:100%;width:100%;color:#65583d}
+ .ref-search-submit{grid-column:1/-1!important;min-height:51px!important;margin-top:10px;border-radius:10px!important;font-size:14px!important;font-weight:800;}
+ .ref-hero .randa-slide{background-position:45% center}
+ .ref-hero:after{background:linear-gradient(100deg,rgba(0,0,0,.7),rgba(0,0,0,.28)),linear-gradient(0deg,rgba(0,0,0,.35),transparent 60%)!important}
+ /* Floating WhatsApp control must not cover the search button while it is visible. */
+ .wa-circle{width:51px!important;height:51px!important;right:12px!important;bottom:calc(16px + env(safe-area-inset-bottom,0px))!important;transition:opacity .22s ease,transform .22s ease,box-shadow .24s ease!important}
+ body.randa-search-button-visible .wa-circle{opacity:0!important;transform:translateY(12px) scale(.88)!important;pointer-events:none!important;}
+}
+@media(max-width:360px){
+ .ref-hero-copy h1{font-size:clamp(35px,10.25vw,40px)!important}
+ .ref-hero-actions{gap:12px}
+ .ref-hero-actions .ref-hero-link{font-size:11px}
+ .ref-hero .ref-hero-copy{padding-top:34px!important}
+ .ref-hero-badge{font-size:10px}
+ .ref-tab{font-size:9.5px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .ref-hero .randa-slide,.ref-hero .randa-slide.randa-slide-active{transition:none!important;animation:none!important;transform:none!important;will-change:auto!important}
+ .ref-hero-link,.wa-circle{transition:none!important}
+}
+/* Tablet navigation fix: 8 desktop links do not fit at 768–940px. */
+@media(min-width:761px) and (max-width:940px){
+ .top-strip{display:none!important}
+ .header .container{width:calc(100% - 34px)!important;min-height:70px;}
+ .header .head-actions .btn.goldbtn{display:none!important}
+ .header .nav-toggle{display:block!important}
+ .header .main-nav{position:absolute!important;top:70px!important;left:0!important;right:0!important;display:none!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;padding:12px 22px 22px!important;background:#141414!important;border-top:1px solid #4b3920!important;box-shadow:0 18px 30px rgba(0,0,0,.25)!important}
+ .header .main-nav.open{display:flex!important}
+ .header .main-nav a{font-size:14px!important;padding:11px!important;border-bottom:1px solid #382c1e!important;color:#f7eee2!important}
+ .header .main-nav a.active,.header .main-nav a:hover{color:#eac675!important}
+ .header .main-nav a.active::after{display:none!important}
+}
