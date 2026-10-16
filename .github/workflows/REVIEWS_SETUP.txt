@@ -1,0 +1,12 @@
+RANDA TOURS - CUSTOMER STORIES
+
+The previous placeholder stories have been replaced by the 60 entries in the supplied final document. Individual review status badges have been removed.
+The site does not claim third-party verification of review authenticity.
+
+To update entries, edit assets/js/reviews.js.
+The original text is saved at docs/RandA_60_Customer_Reviews_Source.txt.
+
+The homepage shows automatically changing story cards with pause/next/previous controls.
+Experiences page provides country and tour filters plus keyword search.
+
+For live use, ensure guests consent to public naming and that the feedback reflects their actual experiences.
