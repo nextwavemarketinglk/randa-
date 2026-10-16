@@ -83,3 +83,74 @@
  .header .main-nav a.active,.header .main-nav a:hover{color:#eac675!important}
  .header .main-nav a.active::after{display:none!important}
 }
+
+
+/* 16 Oct full-bleed fix: image layers are direct children of the hero section,
+   NOT inside the constrained .ref-container. The slide area now matches the
+   complete screen width at every viewport size. */
+.ref-hero {
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background:#101014 url('../images/hero-reference.webp') center center / cover no-repeat;
+}
+.ref-hero > .randa-hero-slides {
+  position:absolute!important;
+  top:0!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  width:100%!important;
+  height:100%!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  overflow:hidden!important;
+  z-index:0!important;
+  pointer-events:none;
+}
+.ref-hero > .randa-hero-slides > .randa-slide {
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  background-size:cover!important;
+  background-position:center center!important;
+  background-repeat:no-repeat!important;
+  border:0!important;
+  border-radius:0!important;
+  filter:none!important;
+  transform:scale(1.025);
+}
+/* The overlay is above both full-bleed slides, but below all readable copy. */
+.ref-hero::before,.ref-hero::after{z-index:1!important}
+.ref-hero > .ref-hero-inner{position:relative;z-index:3!important}
+.ref-hero > .ref-container:last-child{z-index:4!important}
+@media(max-width:760px) {
+  .ref-hero{background-position:center center!important}
+  .ref-hero > .randa-hero-slides > .randa-slide {
+    /* Cover naturally crops the wide photographs on tall mobile screens. */
+    background-position:center center!important;
+  }
+  /* Balanced gradient keeps the white text legible on bright beach scenes. */
+  .ref-hero::after{
+    background:linear-gradient(180deg,rgba(4,4,6,.69) 0%,rgba(4,4,6,.48) 35%,rgba(4,4,6,.34) 66%,rgba(4,4,6,.49) 100%)!important;
+  }
+  .ref-hero-copy h1,
+  .ref-hero-copy p,
+  .ref-hero-copy .ref-hairline,
+  .ref-hero-actions .ref-hero-link {
+    text-shadow:0 2px 13px rgba(0,0,0,.6);
+  }
+  .ref-hero-copy .ref-script {
+    text-shadow:0 2px 9px rgba(0,0,0,.42);
+  }
+}
+/* Keep layout stable on all viewport widths; don't let content push wide. */
+.ref-hero,.ref-hero .ref-container,.ref-hero .ref-hero-main,
+.ref-hero .ref-hero-copy,.ref-hero .ref-search-dock {max-width:100%;}
+@media(prefers-reduced-motion:reduce) {
+  .ref-hero > .randa-hero-slides > .randa-slide {
+    animation:none!important;transition:none!important;transform:none!important;
+  }
+}
