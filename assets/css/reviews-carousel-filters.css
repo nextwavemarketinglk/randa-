@@ -1,0 +1,11 @@
+/* RandA 2026: compact sentiment filters + continuous rightward homepage story motion. */
+.exp-sentiment-list{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:15px 0 3px}
+.exp-sentiment-list .exp-chip{white-space:nowrap;min-width:0}
+.exp-sentiment-list .exp-chip.active{box-shadow:0 3px 11px rgba(193,140,52,.16)}
+.stories-stage{position:relative;overflow:hidden;min-height:326px;touch-action:pan-y}
+.stories-track.stories-marquee,.upgraded-stories .stories-track.stories-marquee{display:flex!important;flex-wrap:nowrap!important;align-items:stretch!important;gap:0!important;width:max-content;max-width:none;will-change:transform;animation:none!important;}
+.stories-marquee-group{display:flex!important;align-items:stretch;flex:0 0 auto;gap:17px;padding-right:17px;}
+.stories-marquee-group .story-card-home{flex:0 0 var(--story-card-width,360px);width:var(--story-card-width,360px);min-width:0;max-width:none;animation:none!important;}
+.stories-marquee-group .story-card-home:hover{transform:translateY(-3px)}
+@media(max-width:700px){.stories-stage{min-height:304px}.exp-sentiment-list{padding-top:13px;gap:7px}.exp-sentiment-list .exp-chip{padding:9px 12px}}
+@media(prefers-reduced-motion:reduce){.stories-track.stories-marquee{will-change:auto;}.stories-marquee-group .story-card-home{transition:none!important;}}

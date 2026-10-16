@@ -47,22 +47,111 @@ function home(){
 function initials(name){return String(name||'?').trim().split(/\s+/).slice(0,2).map(t=>t[0]||'').join('').toUpperCase();}
 function reviewCard(r,compact=false){const hasRating=Number.isInteger(r.rating)&&r.rating>=1&&r.rating<=5;const rating=hasRating?`<span class="story-rating" role="img" aria-label="Rated ${r.rating} out of 5 stars"><span class="story-rating-filled" aria-hidden="true">${'★'.repeat(r.rating)}</span><span class="story-rating-empty" aria-hidden="true">${'☆'.repeat(5-r.rating)}</span></span>`:'';const details=[r.country,r.tour].filter(Boolean).map(escapeHTML).join(' · ');return `<article class="story-card ${compact?'story-card-home':''}" aria-label="Travel review ${Number(r.id)}: ${escapeHTML(r.name)}"><div class="story-top"><span class="story-quote-symbol" aria-hidden="true">“</span>${rating}</div><p class="story-quote">${escapeHTML(r.quote)}</p><div class="story-person"><span class="story-avatar" aria-hidden="true">${escapeHTML(initials(r.name))}</span><div class="story-person-details"><strong>${escapeHTML(r.name)}</strong>${details?`<span>${details}</span>`:''}</div></div></article>`;}
 function reviewsSection(){const total=(window.RANDA_REVIEWS||[]).length;return `<section class="ref-stories upgraded-stories" id="traveller-stories" aria-labelledby="reviews-title"><div class="ref-container"><div class="stories-header"><div><span class="ref-kicker">TRAVEL JOURNAL / ${total} STORIES</span><h2 id="reviews-title">Journeys worth sharing<span class="stories-period">.</span></h2><p>Read travel experiences shared by RandA Tours, arranged by journey and destination.</p></div><a class="story-all-link" href="experiences.html#all-stories">Explore all ${total} stories <span aria-hidden="true">↗</span></a></div><div class="stories-stage" id="reviews-stage"><div class="stories-track" id="reviews-grid" aria-live="off"></div></div><div class="stories-bottom"><div class="stories-progress"><div class="stories-meter"><div id="stories-meter-fill"></div></div><span id="review-range">01–03 / ${total}</span></div><div class="stories-actions"><button class="story-control" id="review-prev" type="button" aria-label="Previous stories">←</button><button class="story-control" id="review-pause" type="button" aria-label="Pause automatic stories" aria-pressed="false">Ⅱ</button><button class="story-control" id="review-next" type="button" aria-label="Next stories">→</button></div></div></div></section>`;}
-function initReviews(){const grid=$('#reviews-grid');if(!grid)return;const rev=Array.isArray(window.RANDA_REVIEWS)?window.RANDA_REVIEWS:[];if(!rev.length)return;let start=0,timer=null,paused=false;const count=$('#review-range'),meter=$('#stories-meter-fill'),pauseBtn=$('#review-pause'),stage=$('#reviews-stage');const reduce=window.matchMedia('(prefers-reduced-motion: reduce)');const step=()=>window.innerWidth<700?1:window.innerWidth<1170?2:3;
- function paint(manual=false){const n=step();const subset=[];for(let i=0;i<n;i++)subset.push(rev[(start+i)%rev.length]);grid.innerHTML=subset.map(r=>reviewCard(r,true)).join('');count.textContent=`${String(start+1).padStart(2,'0')}–${String(Math.min(start+n,rev.length)).padStart(2,'0')} / ${rev.length}`;meter.style.width=`${Math.min(100,(start+n)/rev.length*100)}%`;if(manual){grid.setAttribute('aria-live','polite');setTimeout(()=>grid.setAttribute('aria-live','off'),800);}if(!reduce.matches){grid.classList.remove('story-fade');void grid.offsetWidth;grid.classList.add('story-fade');}}
- function go(delta,manual=false){start=(start+delta+rev.length)%rev.length;paint(manual);}
- function stop(){if(timer){clearInterval(timer);timer=null;}}
- function play(){stop();if(!paused&&!reduce.matches&&document.visibilityState==='visible')timer=setInterval(()=>go(step()),5300);}
- $('#review-prev')?.addEventListener('click',()=>{go(-step(),true);play();});$('#review-next')?.addEventListener('click',()=>{go(step(),true);play();});
- pauseBtn?.addEventListener('click',()=>{paused=!paused;pauseBtn.textContent=paused?'▶':'Ⅱ';pauseBtn.setAttribute('aria-pressed',String(paused));pauseBtn.setAttribute('aria-label',paused?'Resume automatic stories':'Pause automatic stories');play();});
- stage?.addEventListener('mouseenter',stop);stage?.addEventListener('mouseleave',play);stage?.addEventListener('focusin',stop);stage?.addEventListener('focusout',e=>{if(!stage.contains(e.relatedTarget))play();});
- document.addEventListener('visibilitychange',play);window.addEventListener('resize',()=>{paint();play();});paint();play();}
+function initReviews(){
+ const track=$('#reviews-grid'),stage=$('#reviews-stage');
+ if(!track||!stage)return;
+ const reviews=Array.isArray(window.RANDA_REVIEWS)?window.RANDA_REVIEWS:[];
+ if(!reviews.length)return;
+ const count=$('#review-range'),meter=$('#stories-meter-fill'),pauseButton=$('#review-pause');
+ const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
+ let paused=false,hovered=false,focused=false,offset=0,groupWidth=0,stride=0;
+ let lastFrame=0,raf=0,tween=null,visibleCount=3,lastIndex=-1;
+ const speed=36; // pixels per second: steady, readable motion to the right
+ const countVisible=()=>window.innerWidth<700?1:window.innerWidth<1170?2:3;
+ const wrap=value=>groupWidth?((value%groupWidth)+groupWidth)%groupWidth:0;
+ const active=()=>!paused&&!hovered&&!focused&&!reduced.matches&&document.visibilityState==='visible';
+ function syncProgress(){
+  if(!stride)return;
+  const idx=wrap(Math.round(offset/stride));
+  if(idx===lastIndex)return;
+  lastIndex=idx;
+  const first=(reviews.length-idx)%reviews.length;
+  const last=(first+visibleCount-1)%reviews.length;
+  count.textContent=`${String(first+1).padStart(2,'0')}–${String(last+1).padStart(2,'0')} / ${reviews.length}`;
+  meter.style.width=`${Math.max(2,((first+visibleCount)/reviews.length)*100)}%`;
+ }
+ function draw(){
+  track.style.transform=`translate3d(${-(groupWidth||0)+wrap(offset)}px,0,0)`;
+  syncProgress();
+ }
+ function sizeTrack(){
+  visibleCount=countVisible();
+  const gap=17;
+  const width=Math.max(235,(stage.clientWidth-gap*(visibleCount-1))/visibleCount);
+  track.style.setProperty('--story-card-width',`${width}px`);
+  // A group contains reviewCount cards and an ending gap, ensuring a gap-free seam.
+  stride=width+gap;groupWidth=reviews.length*stride;
+  draw();
+ }
+ const group=reviews.map(r=>reviewCard(r,true)).join('');
+ track.classList.add('stories-marquee');
+ track.innerHTML=`<div class="stories-marquee-group" aria-hidden="true">${group}</div><div class="stories-marquee-group">${group}</div>`;
+ const updatePause=()=>{
+  pauseButton.textContent=paused?'▶':'Ⅱ';
+  pauseButton.setAttribute('aria-pressed',String(paused));
+  pauseButton.setAttribute('aria-label',paused?'Resume automatic stories':'Pause automatic stories');
+ };
+ function animateTo(delta){
+  // User navigation takes priority over the ambient automatic motion.
+  const from=offset,to=from+delta*stride,start=performance.now();
+  tween={from,to,start,duration:620};
+ }
+ function frame(now){
+  const dt=lastFrame?Math.min(80,now-lastFrame):0;
+  lastFrame=now;
+  if(tween){
+   const p=Math.min(1,(now-tween.start)/tween.duration);
+   const eased=1-Math.pow(1-p,3);
+   offset=tween.from+(tween.to-tween.from)*eased;
+   if(p===1)tween=null;
+  }else if(active()&&groupWidth){offset+=speed*dt/1000;}
+  if(groupWidth&&Math.abs(offset)>groupWidth*3)offset=wrap(offset);
+  draw();raf=requestAnimationFrame(frame);
+ }
+ $('#review-next')?.addEventListener('click',()=>animateTo(-1));
+ $('#review-prev')?.addEventListener('click',()=>animateTo(1));
+ pauseButton?.addEventListener('click',()=>{paused=!paused;updatePause();});
+ stage.addEventListener('mouseenter',()=>{hovered=true;});
+ stage.addEventListener('mouseleave',()=>{hovered=false;});
+ stage.addEventListener('focusin',()=>{focused=true;});
+ stage.addEventListener('focusout',e=>{if(!stage.contains(e.relatedTarget))focused=false;});
+ window.addEventListener('resize',sizeTrack,{passive:true});
+ if('ResizeObserver'in window)new ResizeObserver(sizeTrack).observe(stage);
+ reduced.addEventListener?.('change',()=>{lastFrame=0;});
+ sizeTrack();updatePause();raf=requestAnimationFrame(frame);
+}
 function experiences(){const count=(window.RANDA_REVIEWS||[]).length;return `<section class="exp-hero"><div class="container exp-hero-grid"><div class="exp-intro"><span class="exp-kicker"><span class="exp-spark">✦</span> EXPERIENCES & TRAVEL JOURNAL</span><h1>Every journey<br>becomes <em>a story.</em></h1><p>From the serenity of Ramayana trails to the charm of Sri Lanka's coast, every journey holds moments worth remembering. Explore the travel stories collected in one place.</p><div class="exp-actions"><a href="#all-stories" class="btn goldbtn">Browse the stories <span aria-hidden="true">↗</span></a><a class="exp-text-link" href="tours.html">Discover our tours <span aria-hidden="true">→</span></a></div><div class="exp-bits"><span>THE ISLAND</span><span class="exp-rule"></span><span>ITS PEOPLE</span><span class="exp-rule"></span><span>YOUR STORY</span></div></div><div class="exp-hero-visual"><img src="${img('ramayana-trail-7n.webp')}" alt="Illustrative Sri Lankan temple and scenery"/><div class="exp-float-note"><span>✺</span><div><strong>The spirit of Sri Lanka</strong><small>Stories shaped by extraordinary places</small></div></div></div></div></section>
 <section class="exp-explore"><div class="container"><div class="exp-sec-head"><span class="ref-kicker">MEMORABLE EXPERIENCES</span><h2>Discover your kind of Sri Lanka</h2><p>There is more to an island than a destination. Here are the experiences around which our journeys are built.</p></div><div class="exp-categories"><a href="tours.html?tour=Ramayana" class="exp-photo-card"><img src="${img('ramayana-5n.webp')}" alt="Ramayana-inspired temple scenery" loading="lazy"><div><span>01 / SPIRITUAL</span><strong>Ramayana Trails</strong><small>Tradition, temples & reflection</small></div></a><a href="tours.html?tour=Cultural" class="exp-photo-card"><img src="${img('cultural-tour.webp')}" alt="Illustrative cultural heritage in Sri Lanka" loading="lazy"><div><span>02 / HERITAGE</span><strong>Cultural Discoveries</strong><small>Ancient cities & living history</small></div></a><a href="tours.html?tour=Beach" class="exp-photo-card"><img src="${img('beach-tour.webp')}" alt="Sri Lankan tropical beach concept" loading="lazy"><div><span>03 / COASTAL</span><strong>Beach Escapes</strong><small>Sun-kissed, slow-paced moments</small></div></a><a href="tours.html?tour=Teen" class="exp-photo-card"><img src="${img('teen-tour.webp')}" alt="Illustrative hill-country train experience" loading="lazy"><div><span>04 / ADVENTURE</span><strong>Family Adventures</strong><small>Wonderful times together</small></div></a></div></div></section>
 <section id="all-stories" class="exp-library"><div class="container"><div class="exp-library-header"><div><span class="ref-kicker">STORIES FROM OUR JOURNEYS</span><h2>The travel journal<span>.</span></h2><p>Browse <strong>${count}</strong> travel stories by tour and country, with convenient filters and search.</p></div></div>
-<div class="exp-filterpanel"><div class="exp-country-list" id="country-filters" role="group" aria-label="Filter stories by country"><button type="button" class="exp-chip active" data-country="All" aria-pressed="true">All stories <span>${count}</span></button>${[['India','India'],['United Kingdom','UK'],['United States','USA'],['Canada','Canada'],['__unlisted__','Other feedback']].map(([name,label])=>{const c=(window.RANDA_REVIEWS||[]).filter(r=>name==='__unlisted__'?!r.country:r.country===name).length;return c?`<button type="button" class="exp-chip" data-country="${name}" aria-pressed="false">${label} <span>${c}</span></button>`:'';}).join('')}</div><div class="exp-tools"><label class="exp-search"><span aria-hidden="true">⌕</span><input id="experience-search" type="search" placeholder="Search names, places or experiences" aria-label="Search travel stories"></label><label class="exp-select-wrap">Tour type <select id="experience-tour" aria-label="Filter by tour type"><option value="All">All tour types</option>${[...new Set(window.RANDA_REVIEWS.map(r=>r.tour))].sort().map(t=>`<option value="${escapeHTML(t)}">${escapeHTML(t)}</option>`).join('')}</select></label></div></div>
+<div class="exp-filterpanel"><div class="exp-country-list" id="country-filters" role="group" aria-label="Filter stories by country"><button type="button" class="exp-chip active" data-country="All" aria-pressed="true">All stories <span>${count}</span></button>${[['India','India'],['United Kingdom','UK'],['United States','USA'],['Canada','Canada'],['__unlisted__','Other feedback']].map(([name,label])=>{const c=(window.RANDA_REVIEWS||[]).filter(r=>name==='__unlisted__'?!r.country:r.country===name).length;return c?`<button type="button" class="exp-chip" data-country="${name}" aria-pressed="false">${label} <span>${c}</span></button>`:'';}).join('')}</div><div class="exp-sentiment-list" id="sentiment-filters" role="group" aria-label="Filter reviews by feedback type"><button type="button" class="exp-chip active" data-sentiment="All" aria-pressed="true">All reviews <span>${count}</span></button><button type="button" class="exp-chip" data-sentiment="Positive" aria-pressed="false">Positive <span>${(window.RANDA_REVIEWS||[]).filter(r=>!(Number.isInteger(r.rating)&&r.rating<=2)).length}</span></button><button type="button" class="exp-chip" data-sentiment="Negative" aria-pressed="false">Negative <span>${(window.RANDA_REVIEWS||[]).filter(r=>Number.isInteger(r.rating)&&r.rating<=2).length}</span></button></div><div class="exp-tools"><label class="exp-search"><span aria-hidden="true">⌕</span><input id="experience-search" type="search" placeholder="Search names, places or experiences" aria-label="Search travel stories"></label><label class="exp-select-wrap">Tour type <select id="experience-tour" aria-label="Filter by tour type"><option value="All">All tour types</option>${[...new Set(window.RANDA_REVIEWS.map(r=>r.tour))].sort().map(t=>`<option value="${escapeHTML(t)}">${escapeHTML(t)}</option>`).join('')}</select></label></div></div>
 <div class="exp-count" id="experience-count" role="status">Showing stories</div><div class="exp-review-grid" id="experience-results"></div><div class="exp-more"><button type="button" class="btn line" id="experience-more">Load more stories <span aria-hidden="true">↓</span></button></div><div class="exp-end"><span>Have a story of your own?</span><h3>We'd love to hear about your journey.</h3><p>Share your own travel experience with RandA, or visit our Facebook page for updates.</p><div><a class="btn goldbtn" href="contact.html">Contact RandA ↗</a>${config.facebook?`<a class="btn line" href="${escapeHTML(config.facebook)}" target="_blank" rel="noopener noreferrer">Our Facebook page ↗</a>`:''}</div></div></div></section>`;}
-function initExperienceLibrary(){const grid=$('#experience-results');if(!grid)return;const all=Array.isArray(window.RANDA_REVIEWS)?window.RANDA_REVIEWS:[];let country='All',query='',tour='All',limit=9;const count=$('#experience-count'),more=$('#experience-more');function paint(){const filtered=all.filter(r=>(country==='All'||(country==='__unlisted__'?!r.country:r.country===country))&&(tour==='All'||r.tour===tour)&&(!query||[r.name,r.country,r.tour,r.quote].join(' ').toLocaleLowerCase().includes(query)));const shown=filtered.slice(0,limit);grid.innerHTML=shown.length?shown.map(r=>reviewCard(r,false)).join(''):'<div class="exp-empty">No matching stories. Try another tour type or search term.</div>';count.textContent=`Showing ${shown.length} of ${filtered.length} ${filtered.length===1?'story':'stories'}`;more.hidden=shown.length>=filtered.length;}
- $$('#country-filters button').forEach(b=>b.addEventListener('click',()=>{country=b.dataset.country;limit=9;$$('#country-filters button').forEach(z=>{const is=z===b;z.classList.toggle('active',is);z.setAttribute('aria-pressed',String(is));});paint();}));$('#experience-search')?.addEventListener('input',e=>{query=e.target.value.toLocaleLowerCase().trim();limit=9;paint();});$('#experience-tour')?.addEventListener('change',e=>{tour=e.target.value;limit=9;paint();});more?.addEventListener('click',()=>{limit+=9;paint();});paint();}
+function initExperienceLibrary(){
+ const grid=$('#experience-results');if(!grid)return;
+ const all=Array.isArray(window.RANDA_REVIEWS)?window.RANDA_REVIEWS:[];
+ let country='All',query='',tour='All',sentiment='All',limit=9;
+ const count=$('#experience-count'),more=$('#experience-more');
+ // The two explicitly rated 2-star reviews are negative; the remaining thirty
+ // are the positive reviews supplied by RandA. No new star ratings are inferred.
+ const feedbackType=r=>Number.isInteger(r.rating)&&r.rating<=2?'Negative':'Positive';
+ function paint(){
+  const filtered=all.filter(r=>(country==='All'||(country==='__unlisted__'?!r.country:r.country===country))&&(sentiment==='All'||feedbackType(r)===sentiment)&&(tour==='All'||r.tour===tour)&&(!query||[r.name,r.country,r.tour,r.quote].join(' ').toLocaleLowerCase().includes(query)));
+  const shown=filtered.slice(0,limit);
+  grid.innerHTML=shown.length?shown.map(r=>reviewCard(r,false)).join(''):'<div class="exp-empty">No matching reviews. Try another filter or search term.</div>';
+  count.textContent=`Showing ${shown.length} of ${filtered.length} ${filtered.length===1?'review':'reviews'}`;
+  more.hidden=shown.length>=filtered.length;
+ }
+ $$('#country-filters button').forEach(b=>b.addEventListener('click',()=>{
+  country=b.dataset.country;limit=9;
+  $$('#country-filters button').forEach(z=>{const selected=z===b;z.classList.toggle('active',selected);z.setAttribute('aria-pressed',String(selected));});paint();
+ }));
+ $$('#sentiment-filters button').forEach(b=>b.addEventListener('click',()=>{
+  sentiment=b.dataset.sentiment;limit=9;
+  $$('#sentiment-filters button').forEach(z=>{const selected=z===b;z.classList.toggle('active',selected);z.setAttribute('aria-pressed',String(selected));});paint();
+ }));
+ $('#experience-search')?.addEventListener('input',e=>{query=e.target.value.toLocaleLowerCase().trim();limit=9;paint();});
+ $('#experience-tour')?.addEventListener('change',e=>{tour=e.target.value;limit=9;paint();});
+ more?.addEventListener('click',()=>{limit+=9;paint();});paint();
+}
 function enhanceMotion(){
  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
  $$('.section-head,.features .feature,.banner-split .copy,.mission > *, .split-2 > *, .contact-grid > *, .detail-grid > *').forEach((el,i)=>{
