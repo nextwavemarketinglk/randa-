@@ -181,3 +181,10 @@ input:focus,select:focus,textarea:focus{outline-color:#c69e52!important}
  .ref-hero::after{background:linear-gradient(90deg,rgba(0,0,0,.76),rgba(0,0,0,.36)),linear-gradient(0deg,rgba(0,0,0,.36),transparent 64%)!important}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important}}
+
+/* Customer-provided star rating; no ratings are inferred for other reviews. */
+.story-top .story-rating{display:inline-flex;align-items:center;gap:0;font:700 17px/1.2 Georgia,serif;letter-spacing:2px;white-space:nowrap;margin-left:auto;padding-top:2px}
+.story-rating-filled{color:#d9ad61}
+.story-rating-empty{color:#857a6b}
+.exp-review-grid .story-rating-empty{color:#a69a87}
+@media(max-width:480px){.story-top .story-rating{font-size:15px;letter-spacing:1px}}

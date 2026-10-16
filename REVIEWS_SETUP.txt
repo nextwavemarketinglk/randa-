@@ -1,12 +1,8 @@
-RANDA TOURS - CUSTOMER STORIES
+RANDA TOURS - CUSTOMER REVIEWS (CURRENT PUBLIC SET)
 
-The previous placeholder stories have been replaced by the 60 entries in the supplied final document. Individual review status badges have been removed.
-The site does not claim third-party verification of review authenticity.
-
-To update entries, edit assets/js/reviews.js.
-The original text is saved at docs/RandA_60_Customer_Reviews_Source.txt.
-
-The homepage shows automatically changing story cards with pause/next/previous controls.
-Experiences page provides country and tour filters plus keyword search.
-
-For live use, ensure guests consent to public naming and that the feedback reflects their actual experiences.
+Current website shows 32 entries: 30 selected positive reviews from the earlier 60-entry client-provided document, plus the two 2-star service reviews provided on 16 October 2026.
+The original 60-entry document is preserved at docs/RandA_60_Customer_Reviews_Source.txt and is NOT part of the currently displayed 32.
+The two 2-star entries have no supplied customer names; they are displayed as Guest (name not provided). No country or additional details are invented.
+Positive reviews show no invented star ratings.
+Website reviews are controlled from assets/js/reviews.js. Update the curated selection there if needed.
+Homepage carousel and Experiences page search / filters use that same review list.
