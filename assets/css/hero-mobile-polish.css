@@ -154,3 +154,54 @@
     animation:none!important;transition:none!important;transform:none!important;
   }
 }
+
+
+/* Desktop + mobile single-source full-bleed hero | 16 October 2026
+   Avoid exposing a second, mismatched image outside the slideshow layer.
+   Older JS may nest slides inside .ref-container; JS reparents them. */
+body[data-page="home"] .ref-hero {
+  width:100%;
+  max-width:none;
+  overflow:hidden;
+  background-color:#131316!important;
+  background-image:none!important;
+  background-size:cover!important;
+}
+body[data-page="home"] .ref-hero .randa-hero-slides,
+body[data-page="home"] .ref-hero > .randa-hero-slides {
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  min-width:100%!important;
+  max-width:none!important;
+  height:100%!important;
+  margin:0!important;
+  padding:0!important;
+  transform:none!important;
+  overflow:hidden!important;
+  z-index:0!important;
+  pointer-events:none!important;
+}
+body[data-page="home"] .ref-hero .randa-hero-slides .randa-slide {
+  position:absolute!important;
+  top:0!important;right:0!important;bottom:0!important;left:0!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  background-position:center center!important;
+  background-size:cover!important;
+  background-repeat:no-repeat!important;
+  border:0!important;
+  border-radius:0!important;
+  opacity:0;
+  transition:opacity 1.7s cubic-bezier(.25,.1,.25,1)!important;
+}
+body[data-page="home"] .ref-hero .randa-hero-slides .randa-slide-active {opacity:1!important}
+body[data-page="home"] .ref-hero::before,
+body[data-page="home"] .ref-hero::after{pointer-events:none;z-index:1!important}
+body[data-page="home"] .ref-hero > .ref-hero-inner{position:relative;z-index:3!important}
+body[data-page="home"] .ref-hero > .ref-container:last-child{z-index:4!important}
+@media(prefers-reduced-motion:reduce){
+ body[data-page="home"] .ref-hero .randa-hero-slides .randa-slide{transition:none!important;animation:none!important;transform:none!important}
+}

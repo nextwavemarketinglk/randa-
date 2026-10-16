@@ -3,6 +3,21 @@
   'use strict';
   const hero=document.querySelector('body[data-page="home"] .ref-hero');
   if(!hero)return;
+  // Force full-bleed placement even if an older cached layout puts the slides
+  // in .ref-container. This prevents desktop side strips/repeated backgrounds.
+  const slideStage=hero.querySelector('.randa-hero-slides');
+  if(slideStage && slideStage.parentElement!==hero){
+    hero.insertBefore(slideStage,hero.firstChild);
+  }
+  if(slideStage){
+    Object.assign(slideStage.style,{
+      position:'absolute',inset:'0',width:'100%',height:'100%',
+      maxWidth:'none',margin:'0',transform:'none',zIndex:'0'
+    });
+  }
+  // Only slideshow layers supply the hero photo; never tile another scene
+  // underneath them across the unused edges.
+  hero.style.backgroundImage='none';
   const layers=Array.from(hero.querySelectorAll('.randa-slide'));
   if(layers.length!==2)return;
   const photos=['hero-reference.webp','beach.webp','safari.webp'];
