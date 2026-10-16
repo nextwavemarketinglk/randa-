@@ -1,0 +1,130 @@
+/* RandA MOTION STUDIO - 2026
+   Animation-only enhancement of existing Black & Gold UI.
+   No changed content, geometry, palette, or feature design.
+   Triggered on entry; CSS class added only after JS is ready.
+*/
+@media (prefers-reduced-motion: no-preference) {
+  /* Gentle editorial pop-in: each existing block rises and settles. */
+  .randa-motion-pop {
+    transition-property: opacity, transform, filter !important;
+    transition-duration: .82s, .96s, .78s !important;
+    transition-timing-function: ease, cubic-bezier(.16,1,.26,1.02), ease-out !important;
+    transition-delay: var(--randa-motion-delay,0ms) !important;
+    will-change: auto;
+  }
+  .randa-motion-pop.randa-motion-wait {
+    opacity: 0.07 !important;
+    transform: translate3d(0,36px,0) scale(.971) !important;
+    filter: blur(4px) !important;
+    animation: none !important;
+  }
+  .randa-motion-pop.randa-motion-show,
+  .randa-motion-pop.randa-motion-show.reveal.visible {
+    opacity: 1 !important;
+    transform: translate3d(0,0,0) scale(1);
+    filter: blur(0) !important;
+    animation: none !important;
+  }
+  /* Restore beautiful existing interaction lift after an entrance. */
+  .tour-card.randa-motion-show:hover,
+  .tour-card.randa-motion-show:focus-within,
+  .service-card.randa-motion-show:hover,
+  .destination-card.randa-motion-show:hover,
+  .vehicle-card.randa-motion-show:hover,
+  .ref-dest-card.randa-motion-show:hover,
+  .ref-why-card.randa-motion-show:hover,
+  .exp-photo-card.randa-motion-show:hover {
+    transform: translate3d(0,-7px,0) scale(1.008);
+  }
+  /* Card-photo gold light passing through on hover/focus: no layout shift. */
+  .tour-card .image,
+  .ref-dest-card,
+  .exp-photo-card,
+  .destination-card {position:relative;isolation:isolate;}
+  .tour-card .image::before,
+  .ref-dest-card::before,
+  .exp-photo-card::before,
+  .destination-card::before {
+    content:'';position:absolute;inset:0;z-index:5;
+    pointer-events:none;opacity:0;
+    background:linear-gradient(112deg,transparent 25%,rgba(244,207,137,.05) 45%,rgba(255,236,189,.20) 52%,transparent 71%);
+    transform:translate3d(-125%,0,0) skewX(-6deg);
+    transition:transform .92s cubic-bezier(.2,.8,.2,1),opacity .38s ease;
+  }
+  .tour-card:hover .image::before,.tour-card:focus-within .image::before,
+  .ref-dest-card:hover::before,.ref-dest-card:focus-visible::before,
+  .exp-photo-card:hover::before,.exp-photo-card:focus-visible::before,
+  .destination-card:hover::before,.destination-card:focus-visible::before {
+    transform:translate3d(125%,0,0) skewX(-6deg);opacity:1;
+  }
+  /* Pop-up existing card labels/content on interaction, never add new copy. */
+  .tour-card .floating-label {
+    transition: transform .55s cubic-bezier(.16,1,.3,1), box-shadow .55s ease;
+    transform-origin:top left;
+  }
+  .tour-card:hover .floating-label,.tour-card:focus-within .floating-label {
+    transform:translateY(-3px) scale(1.045);
+    box-shadow:0 8px 20px rgba(0,0,0,.28);
+  }
+  .ref-dest-card .ref-dest-info,
+  .exp-photo-card>div {
+    transition:transform .65s cubic-bezier(.16,1,.3,1);
+  }
+  .ref-dest-card:hover .ref-dest-info,
+  .ref-dest-card:focus-visible .ref-dest-info,
+  .exp-photo-card:hover>div,.exp-photo-card:focus-visible>div {
+    transform:translate3d(0,-4px,0);
+  }
+  /* Accessible entrance for existing hero copy. */
+  @keyframes randaTextBloom {
+    from {opacity:0;transform:translate3d(0,20px,0);filter:blur(5px)}
+    to {opacity:1;transform:translate3d(0,0,0);filter:blur(0)}
+  }
+  body[data-page=home] .ref-hero-copy .ref-script,
+  body[data-page=home] .ref-hero-copy h1,
+  body[data-page=home] .ref-hero-copy .ref-hairline,
+  body[data-page=home] .ref-hero-copy p,
+  body[data-page=home] .ref-hero-copy .ref-hero-actions {
+    animation:randaTextBloom 1s cubic-bezier(.15,.87,.25,1) both;
+  }
+  body[data-page=home] .ref-hero-copy .ref-script {animation-delay:.06s}
+  body[data-page=home] .ref-hero-copy h1 {animation-delay:.17s}
+  body[data-page=home] .ref-hero-copy .ref-hairline {animation-delay:.30s}
+  body[data-page=home] .ref-hero-copy p {animation-delay:.42s}
+  body[data-page=home] .ref-hero-copy .ref-hero-actions {animation-delay:.54s}
+  /* Hover gold accents, using same colors already on the website. */
+  .btn.goldbtn,.btn.primary,.ref-search-submit {position:relative;overflow:hidden;isolation:isolate;}
+  .btn.goldbtn::before,.btn.primary::before,.ref-search-submit::before {
+    content:'';position:absolute;inset:-10%;pointer-events:none;z-index:0;
+    background:linear-gradient(115deg,transparent 27%,rgba(255,255,255,.33) 47%,transparent 64%);
+    transform:translateX(-140%) skewX(-10deg);transition:transform .82s ease;
+  }
+  .btn.goldbtn:hover::before,.btn.goldbtn:focus-visible::before,
+  .btn.primary:hover::before,.btn.primary:focus-visible::before,
+  .ref-search-submit:hover::before,.ref-search-submit:focus-visible::before {
+    transform:translateX(140%) skewX(-10deg);
+  }
+  /* Premium review carousel already auto-plays; just gently settle cards. */
+  @keyframes randaReviewBloom {
+    from {opacity:.12;transform:translate3d(0,18px,0) scale(.973);filter:blur(3px)}
+    to {opacity:1;transform:translate3d(0,0,0) scale(1);filter:blur(0)}
+  }
+  .stories-track.story-fade>.story-card {
+    animation:randaReviewBloom .87s cubic-bezier(.16,1,.3,1) both !important;
+  }
+  .stories-track.story-fade>.story-card:nth-child(2){animation-delay:.11s !important}
+  .stories-track.story-fade>.story-card:nth-child(3){animation-delay:.20s !important}
+  /* Focus feedback: no modification of resting content/layout. */
+  .ref-field:focus-within{box-shadow:inset 0 -2px rgba(220,172,82,.75)}
+  .exp-chip,.filter-btn,.story-control{transition-duration:.33s !important}
+}
+@media (max-width:760px) and (prefers-reduced-motion:no-preference) {
+  .randa-motion-pop {transition-duration:.67s, .73s, .61s !important}
+  .randa-motion-pop.randa-motion-wait {transform:translate3d(0,20px,0) scale(.988) !important;filter:blur(2px)!important}
+  /* Don't animate oversized hero copy with blur on small devices. */
+  body[data-page=home] .ref-hero-copy h1 {animation-duration:.8s;animation-delay:.07s}
+}
+@media (prefers-reduced-motion:reduce) {
+  .randa-motion-pop,.randa-motion-pop.randa-motion-wait,.randa-motion-pop.randa-motion-show {opacity:1!important;filter:none!important;transform:none!important;animation:none!important;transition:none!important}
+  body[data-page=home] .ref-hero-copy>*{animation:none!important;filter:none!important}
+}
